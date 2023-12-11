@@ -105,7 +105,7 @@ python main.py \
 ## Demonstrate the SMAE algorithm's zero-shot noise reduction effect and physical information recovery capability
 
 Noise reduction results on the SAXS mapping from mouse radius (Section ‘Large amount of highly symmetrical low SNR data’), and on the WAXD mapping from cross section of human femur head (Section ‘Highly symmetrical data corrupted by external noises’) using the model trained by the SMAE algorithm and tested in zero-shot mode are shown.  
-![image](https://github.com/zzZhou8/SEDCNN-for-SAXS-and-WAXD/blob/main/img/SAXS.png)
+![image](https://github.com/zzZhou8/SMAE/blob/master/Fig_in_paper_and_code/Mouse%20radius%20SAXS%20and%20femoral%20head%20WAXD.png)
 
 Effectiveness of each denoising algorithm on physical information recovery of bamboo WAXD data in section “Small amount of highly symmetrical low SNR data” . A: WAXD pattern with 1-second exposure time; Symmetrical denoising result without data augmentation; Symmetrical denoising result with data augmentation; Denoising using supervised learning algorithm; Denoising using zero-shot Noise2Noise algorithm; WAXD pattern with 10-second exposure time. B: Azimuthal integration in the orange zone and gaussian fitting is performed on the green region after background subtraction.   
 ![image](https://github.com/zzZhou8/SEDCNN-for-SAXS-and-WAXD/blob/main/img/SAXS.png)
