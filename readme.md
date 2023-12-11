@@ -102,7 +102,8 @@ python main.py \
     --test_data_aug True \
     --finetune_test_epochs 60 \
 ```
-
+We are providing a mind map for your understanding.
+![image](https://github.com/zzZhou8/SMAE/blob/master/Fig_in_paper_and_code/Mind%20map%20of%20how%20to%20use%20SMAE%20code.jpg)
 ## Demonstrate the SMAE algorithm's zero-shot noise reduction effect and physical information recovery capability
 
 Noise reduction results on the SAXS mapping from mouse radius (Section ‘Large amount of highly symmetrical low SNR data’), and on the WAXD mapping from cross section of human femur head (Section ‘Highly symmetrical data corrupted by external noises’) using the model trained by the SMAE algorithm and tested in zero-shot mode are shown.  
