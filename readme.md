@@ -31,8 +31,9 @@ __The following process can be done by the Divide function in utils.__
 __Step 2:__ divides the masked pattern equally into left and right parts;   
 __Step 3:__ takes either the left or the right part, then flips the pattern horizontally then vertically;   
 __Step 4:__ combines the masks on the right part and on the flipped pattern as a common mask, since the masked areas on the right part and on the flipped pattern are not the same;   
-__Step 5:__ applies the common mask respectively on the right part generated from Step 2 and on the flipped pattern generated from Step 3, producing masked right and masked left patterns as input and target of the Encoder-Decoder.  
+__Step 5:__ applies the common mask respectively on the right part generated from Step 2 and on the flipped pattern generated from Step 3, producing masked right and masked left patterns as input and target of the Encoder-Decoder.
 
+![image](https://github.com/zzZhou8/SMAE/blob/master/Fig_in_paper_and_code/Preprocess%20of%20SMAE%20algorithem%20and%20zero-shot%20denoising%20process.png)
 ## Training process
 All of our input data is in __'.npy'__ format  
 
@@ -108,9 +109,12 @@ Noise reduction results on the SAXS mapping from mouse radius (Section ‘Large 
 ![image](https://github.com/zzZhou8/SMAE/blob/master/Fig_in_paper_and_code/Mouse%20radius%20SAXS%20and%20femoral%20head%20WAXD.png)
 
 Effectiveness of each denoising algorithm on physical information recovery of bamboo WAXD data in section “Small amount of highly symmetrical low SNR data” . A: WAXD pattern with 1-second exposure time; Symmetrical denoising result without data augmentation; Symmetrical denoising result with data augmentation; Denoising using supervised learning algorithm; Denoising using zero-shot Noise2Noise algorithm; WAXD pattern with 10-second exposure time. B: Azimuthal integration in the orange zone and gaussian fitting is performed on the green region after background subtraction.   
-![image](https://github.com/zzZhou8/SEDCNN-for-SAXS-and-WAXD/blob/main/img/SAXS.png)
+![image](https://github.com/zzZhou8/SMAE/blob/master/Fig_in_paper_and_code/Bamboo%20WAXD.png)
 
 (A) Illustration of anisotropic structure characterization on the MG ribbon under force loading at 250C. Differential diffraction pattern between 33N and 0N is shown. Fig. 5 (A(SMAE opt)) is plotted from the raw pattern after applying SMAE zero-shot noise reduction, and Fig. 5 (A(raw)) is plotted from the raw pattern. (B) We perform the Fourier transform of the full scattering pattern in reciprocal space to obtain the real-space G(r) plot. In order to study the effect of external loading on the local structure, the 0° sector parallel to the loading force is chosen in this study, and the S(Q) plot is obtained by integrating the red region of the 0° sector in Fig. 5(A).  In the S(Q) and G(r) plots of MG, RT-raw is achieved from MG bulk collected with 120s expose time at room temperature, 250C-raw is achieved from MG ribbon at 250 degrees Celsius, and 250C-SMAE is the 250C-raw data from MG ribbon after being optimized by the zero-shot noise reduction using the SMAE pre-trained model. Since the sample composition is the same while the temperature is different, the difference between the RT-raw data and the 250C-raw data at 0N loading in the G(r) plot only happens on the peak width. Therefore, the RT-raw data can be regard as the reference. (C) Time dependence of G(r) for MG ribbon under loading process. (D) The change of force, strain, and centroid of 3rd shell under loading process.  
-![image](https://github.com/zzZhou8/SEDCNN-for-SAXS-and-WAXD/blob/main/img/SAXS.png)
+![image](https://github.com/zzZhou8/SMAE/blob/master/Fig_in_paper_and_code/PDF.png)
 
-
+Finally, we used the femoral head SAXS data 'hb08' and the SMAE algorithm to pre-train the model, and used the above model on three other femoral head SAXS datasets with the same experimental conditions but different samples to perform the zero-shot noise reduction test and the test with the low SNR data fine-tuning, respectively, and there is not a big difference in the results, which shows that the pre-trained model of the SMAE algorithm is robust to a certain extent.
+![image](https://github.com/zzZhou8/SMAE/blob/master/Fig_in_paper_and_code/Finetuning%20using%20similar%20data%20orientation.png)
+![image](https://github.com/zzZhou8/SMAE/blob/master/Fig_in_paper_and_code/Finetuning%20using%20similar%20data%20D-period.png)
+![image](https://github.com/zzZhou8/SMAE/blob/master/Fig_in_paper_and_code/Finetuning%20using%20similar%20data%20Anisotropy.png)
