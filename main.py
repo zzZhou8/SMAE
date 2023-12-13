@@ -10,7 +10,7 @@ from solver import Solver
 parser = argparse.ArgumentParser()
 
 # The mode parameter determines whether the current model is in the train or test phase.
-parser.add_argument('--mode', type=str, default='test')
+parser.add_argument('--mode', type=str, default='train')
 # base_model True means you want to use your own base data to train the base model,
 # False means you want to use the fine-tuned training process.
 parser.add_argument('--base_model', type=bool, default=True)
@@ -62,7 +62,7 @@ parser.add_argument('--finetune_save_epochs', type=int, default=5)
 # base_test_epochs base_test_epochs is the number of rounds of the model you are testing, 
 # and the base model of that round will be used as a starting point for fine-tuning model training
 parser.add_argument('--base_test_epochs', type=int, default=260)
-parser.add_argument('--finetune_test_epochs', type=int, default=25)
+parser.add_argument('--finetune_test_epochs', type=int, default=100)
 
 # Determining learning rates for base and fine-tuned models
 parser.add_argument('--base_lr', type=float, default=1e-3)

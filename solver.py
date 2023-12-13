@@ -354,9 +354,12 @@ class Solver(object):
                             x_out=x_out.squeeze()
                             pred = torch.cat([x_out,y_out],dim=-1)
 
-                            #pred = pred.unsqueeze(0)
-                            #pred = transform_center(pred)
-                            #pred = pred.squeeze()
+                            if self.base_model:
+                                pred = pred
+                            else:  
+                                pred = pred.unsqueeze(0)
+                                pred = transform_center(pred)
+                                pred = pred.squeeze()
 
                             #这个是目标图像
                             target_pic=target.squeeze()
@@ -480,6 +483,13 @@ class Solver(object):
                         y_input=y_raw.squeeze()
                         input_pic = torch.cat([x_input,y_input],dim=-1)
 
+                        if self.base_model:
+                            pred = pred
+                        else:  
+                            pred = pred.unsqueeze(0)
+                            pred = transform_center(pred)
+                            pred = pred.squeeze()
+                                       
                         # denormalize, truncate
                         input_pic= self.trunc(self.denormalize_(input_pic.view(shape_1, shape_2).cpu().detach()))
                         pred = self.trunc(self.denormalize_(pred.view(shape_1, shape_2).cpu().detach()))
