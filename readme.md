@@ -102,14 +102,9 @@ python main.py \
     --test_data_aug True \
     --finetune_test_epochs 60 \
 ```
-<<<<<<< HEAD
 Finally we have provided a mind map for you to understand and use this code.
 ![image](https://github.com/zzZhou8/SMAE/blob/master/Fig_in_paper_and_code/Mind%20map%20of%20how%20to%20use%20SMAE%20code.jpg)
 
-=======
-We are providing a mind map for your understanding.
-![image](https://github.com/zzZhou8/SMAE/blob/master/Fig_in_paper_and_code/Mind%20map%20of%20how%20to%20use%20SMAE%20code.jpg)
->>>>>>> ad0a4950a9604fd20ae2cc71f2f8a443ef412e4a
 ## Demonstrate the SMAE algorithm's zero-shot noise reduction effect and physical information recovery capability
 
 Noise reduction results on the SAXS mapping from mouse radius (Section ‘Large amount of highly symmetrical low SNR data’), and on the WAXD mapping from cross section of human femur head (Section ‘Highly symmetrical data corrupted by external noises’) using the model trained by the SMAE algorithm and tested in zero-shot mode are shown.  
@@ -123,10 +118,7 @@ Effectiveness of each denoising algorithm on physical information recovery of ba
 (A) Illustration of anisotropic structure characterization on the MG ribbon under force loading at 250C. Differential diffraction pattern between 33N and 0N is shown. Fig. 5 (A(SMAE opt)) is plotted from the raw pattern after applying SMAE zero-shot noise reduction, and Fig. 5 (A(raw)) is plotted from the raw pattern. (B) We perform the Fourier transform of the full scattering pattern in reciprocal space to obtain the real-space G(r) plot. In order to study the effect of external loading on the local structure, the 0° sector parallel to the loading force is chosen in this study, and the S(Q) plot is obtained by integrating the red region of the 0° sector in Fig. 5(A).  In the S(Q) and G(r) plots of MG, RT-raw is achieved from MG bulk collected with 120s expose time at room temperature, 250C-raw is achieved from MG ribbon at 250 degrees Celsius, and 250C-SMAE is the 250C-raw data from MG ribbon after being optimized by the zero-shot noise reduction using the SMAE pre-trained model. Since the sample composition is the same while the temperature is different, the difference between the RT-raw data and the 250C-raw data at 0N loading in the G(r) plot only happens on the peak width. Therefore, the RT-raw data can be regard as the reference. (C) Time dependence of G(r) for MG ribbon under loading process. (D) The change of force, strain, and centroid of 3rd shell under loading process.  
 ![image](https://github.com/zzZhou8/SMAE/blob/master/Fig_in_paper_and_code/PDF.png)
 
-<<<<<<< HEAD
 -----
-=======
->>>>>>> ad0a4950a9604fd20ae2cc71f2f8a443ef412e4a
 Finally, we used the femoral head SAXS data 'hb08' and the SMAE algorithm to pre-train the model, and used the above model on three other femoral head SAXS datasets with the same experimental conditions but different samples to perform the zero-shot noise reduction test and the test with the low SNR data fine-tuning, respectively, and there is not a big difference in the results, which shows that the pre-trained model of the SMAE algorithm is robust to a certain extent.
 ![image](https://github.com/zzZhou8/SMAE/blob/master/Fig_in_paper_and_code/Finetuning%20using%20similar%20data%20orientation.png)
 ![image](https://github.com/zzZhou8/SMAE/blob/master/Fig_in_paper_and_code/Finetuning%20using%20similar%20data%20D-period.png)
