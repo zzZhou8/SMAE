@@ -300,106 +300,123 @@ class Solver(object):
         else:
             print('The training and testing status of your model is now: trained using data augmentation method {},tested using data augmentation method {}'.format(self.train_data_aug,self.test_data_aug))
             if self.Loop_test:
-                pred_psnr_avg_list=[]
-                pred_ssim_avg_list=[]
-                pred_rmse_avg_list=[]
+                if self.exist_target_data:
+                    pred_psnr_avg_list=[]
+                    pred_ssim_avg_list=[]
+                    pred_rmse_avg_list=[]
 
-                loop_num=int(self.test_epochs/self.save_epochs)
-                print('In total, we will test the {} group of models'.format(loop_num))
-                for idx in range(1,loop_num+1):
-                    
-                    print('Group {} of models being tested'.format(idx))
+                    if self.base_model:
+                        loop_num=int(self.base_test_epochs/self.base_save_epochs)
+                    else:
+                        loop_num=int(self.finetune_test_epochs/self.finetune_save_epochs)
 
-                    del self.SEDCNN4
-
-                    self.SEDCNN4 = SEDCNN4().to(self.device)
-                    test_epoch=int(self.save_epochs*idx)
-                    self.load_model(test_epoch)#重新保存的模型
-
-                    # compute PSNR, SSIM, RMSE
-                    pred_psnr_avg, pred_ssim_avg, pred_rmse_avg = 0, 0, 0
-                    
-                    with torch.no_grad():
-                        for i, (x_raw,y_raw,target) in enumerate(self.data_loader):
-                            shape_ = target.shape[-1]
-
-                            if self.test_data_aug:
-                                x=Flip_Horizon_and_Vertical(x_raw,inverse=False)
-                                y=Flip_Horizon_and_Vertical(y_raw,inverse=False)
-
-                                x = x.unsqueeze(1).float().to(self.device)
-                                y = y.unsqueeze(1).float().to(self.device)
-
-                                pred_left = self.SEDCNN4(x)
-                                pred_right = self.SEDCNN4(y)
-
-                                x=Flip_Horizon_and_Vertical(pred_left,inverse=True)
-                                y=Flip_Horizon_and_Vertical(pred_right,inverse=True)
-
-                                x_out=torch.mean(y,dim=0,keepdim=True)
-                                y_out=torch.mean(x,dim=0)
-        
-                            else:
-                                x = x_raw.unsqueeze(1).float().to(self.device)
-                                y = y_raw.unsqueeze(1).float().to(self.device)
-
-                                pred_left = self.SEDCNN4(x)
-                                pred_right = self.SEDCNN4(y)
-
-                                x_out = pred_right.squeeze(0)
-                                y_out = pred_left.squeeze()
-                            
-                            transform_center=transforms.Compose([transforms.RandomHorizontalFlip(p=1),transforms.RandomVerticalFlip(p=1)])
-                            x_out=transform_center(x_out)
-                            x_out=x_out.squeeze()
-                            pred = torch.cat([x_out,y_out],dim=-1)
-
-                            if self.base_model:
-                                pred = pred
-                            else:  
-                                pred = pred.unsqueeze(0)
-                                pred = transform_center(pred)
-                                pred = pred.squeeze()
-
-                            #这个是目标图像
-                            target_pic=target.squeeze()
-
-                            # denormalize, truncate
-                            pred = self.trunc(self.denormalize_(pred.view(shape_, shape_).cpu().detach()))
-                            target_pic = self.trunc(self.denormalize_(target_pic.view(shape_, shape_).cpu().detach()))
-
-                            data_range = self.trunc_max - self.trunc_min
-                            pred_result = compute_measure_simple(target_pic.to(torch.float32), pred.to(torch.float32), data_range)
-                            pred_psnr_avg += pred_result[0]
-                            pred_ssim_avg += pred_result[1]
-                            pred_rmse_avg += pred_result[2]
-                            
-                            printProgressBar(i, len(self.data_loader),
-                                            prefix="Compute measurements ..",
-                                            suffix='Complete', length=25)#显示一下进度
-
-                        #均值计算：
-                        pred_psnr_avg=pred_psnr_avg/len(self.data_loader)
-                        pred_ssim_avg=pred_ssim_avg/len(self.data_loader)
-                        pred_rmse_avg=pred_rmse_avg/len(self.data_loader)
-                        delat_mean_optimized_dot3=delat_mean_optimized_dot3/len(self.data_loader)
-                        delat_Var_optimized_dot3=delat_Var_optimized_dot3/len(self.data_loader)
-                        delta_intensity_optimized_dot3=delta_intensity_optimized_dot3/len(self.data_loader)
-                        dot3_direct_optimized_ava=dot3_direct_optimized_ava/len(self.data_loader)
-
-                        #均值在列表中进行保存：
-                        pred_psnr_avg_list.append(pred_psnr_avg)
-                        pred_ssim_avg_list.append(pred_ssim_avg)
-                        pred_rmse_avg_list.append(pred_rmse_avg)
-
+                    print('In total, we will test the {} group of models'.format(loop_num))
+                    for idx in range(1,loop_num+1):
                         
-                        print('\n')
-                        #显示一下最后的训练效果呗
-                        print('对于第{}保存的模型其预测结果为：'.format(test_epoch))
-                        print('Predictions === \nPSNR avg: {:.4f} \nSSIM avg: {:.4f} \nRMSE avg: {:.4f} '.format(pred_psnr_avg, pred_ssim_avg, pred_rmse_avg))
+                        print('Group {} of models being tested'.format(idx))
+
+                        del self.SEDCNN4
+
+                        self.SEDCNN4 = SEDCNN4().to(self.device)
+                        if self.base_model:
+                            test_epoch=int(self.base_save_epochs*idx)
+                        else:
+                            test_epoch=int(self.finetune_save_epochs*idx)
+
+                        self.load_model(test_epoch)#重新保存的模型
+
+                        # compute PSNR, SSIM, RMSE
+                        pred_psnr_avg, pred_ssim_avg, pred_rmse_avg = 0, 0, 0
+                        
+                        with torch.no_grad():
+                            for i, data_all in enumerate(self.data_loader):
+
+                                x_raw=data_all[0]
+                                y_raw=data_all[1]
+                                target=data_all[2]
+                               
+                                shape_1 = x_raw.shape[1]
+                                shape_2 = int(x_raw.shape[2]*2)
+
+                                if self.test_data_aug:
+
+                                    x=Flip_Horizon_and_Vertical(x_raw,inverse=False)
+                                    y=Flip_Horizon_and_Vertical(y_raw,inverse=False)
+
+                                    x = x.unsqueeze(1).float().to(self.device)
+                                    y = y.unsqueeze(1).float().to(self.device)
+
+                                    pred_left = self.SEDCNN4(x)
+                                    pred_right = self.SEDCNN4(y)
+
+                                    pred_left = pred_left.squeeze()
+                                    pred_right = pred_right.squeeze()
+
+                                    x=Flip_Horizon_and_Vertical(pred_left,inverse=True)
+                                    y=Flip_Horizon_and_Vertical(pred_right,inverse=True)
+
+                                    x_out=torch.mean(y,dim=0)
+                                    y_out=torch.mean(x,dim=0)
+                                    x_out=x_out.squeeze()
+                                    y_out=y_out.squeeze()
+            
+                                else:
+                                    x = x_raw.unsqueeze(1).float().to(self.device)
+                                    y = y_raw.unsqueeze(1).float().to(self.device)
+
+                                    pred_left = self.SEDCNN4(x)
+                                    pred_right = self.SEDCNN4(y)
+
+                                    x_out = pred_right.squeeze()
+                                    y_out = pred_left.squeeze()
+                                    
+                                    #process for opt data
+                                x_out=torch.flip(torch.flip(x_out,[0]),[1])
+                                pred = torch.cat([x_out,y_out],dim=-1)
+
+                                if self.base_model:
+                                    pred = pred
+                                else:  
+                                    pred = torch.flip(torch.flip(pred,[0]),[1])
+                        
+                                # denormalize, truncate
+                                pred = self.trunc(self.denormalize_(pred.view(shape_1, shape_2).cpu().detach()))
+
+                                target_pic=target.squeeze()
+                                target_pic = self.trunc(self.denormalize_(target_pic.view(shape_1, shape_2).cpu().detach()))
+
+                                data_range = self.trunc_max - self.trunc_min
+                                pred_result = compute_measure_simple(target_pic.to(torch.float32), pred.to(torch.float32), data_range)
+                                pred_psnr_avg += pred_result[0]
+                                pred_ssim_avg += pred_result[1]
+                                pred_rmse_avg += pred_result[2]
+                                
+                                printProgressBar(i, len(self.data_loader),
+                                                prefix="Compute measurements ..",
+                                                suffix='Complete', length=25)#显示一下进度
+
+                            #均值计算：
+                            pred_psnr_avg=pred_psnr_avg/len(self.data_loader)
+                            pred_ssim_avg=pred_ssim_avg/len(self.data_loader)
+                            pred_rmse_avg=pred_rmse_avg/len(self.data_loader)
+
+                            #均值在列表中进行保存：
+                            pred_psnr_avg_list.append(pred_psnr_avg)
+                            pred_ssim_avg_list.append(pred_ssim_avg)
+                            pred_rmse_avg_list.append(pred_rmse_avg)
+
+                            print('\n')
+                            #显示一下最后的训练效果呗
+                            print('对于第{}保存的模型其预测结果为：'.format(test_epoch))
+                            print('Predictions === \nPSNR avg: {:.4f} \nSSIM avg: {:.4f} \nRMSE avg: {:.4f} '.format(pred_psnr_avg, pred_ssim_avg, pred_rmse_avg))
 
                     #最终的数据保存
                     avg_list_root='avg_list'
+                    if self.base_model:
+                        avg_list_root = os.path.join(avg_list_root, self.base_key_word)
+                    else:
+                        avg_list_root = os.path.join(avg_list_root, self.finetune_key_word)
+
                     if self.train_data_aug:
                         avg_list=os.path.join(avg_list_root,'with_train_data_aug')
                     else:
@@ -410,7 +427,6 @@ class Solver(object):
                     else:
                         avg_list = os.path.join(avg_list, 'without_test_data_aug')
 
-
                     if not os.path.exists(avg_list):#没有就产生一个
                         os.makedirs(avg_list)
                         print('Create path : {}'.format(avg_list))
@@ -418,6 +434,8 @@ class Solver(object):
                     np.save(os.path.join(avg_list,'pred_psnr_avg_list.npy'),pred_psnr_avg_list)
                     np.save(os.path.join(avg_list,'pred_ssim_avg_list.npy'),pred_ssim_avg_list)
                     np.save(os.path.join(avg_list,'pred_rmse_avg_list.npy'),pred_rmse_avg_list)
+                else:
+                    print('No target exist, so we can not caculate PSNR, SSIM and RMSE for you')
 
             else:#直接测试
                 del self.SEDCNN4#把原本的模型进行了释放
@@ -448,6 +466,7 @@ class Solver(object):
                         shape_2 = int(x_raw.shape[2]*2)
 
                         if self.test_data_aug:
+
                             x=Flip_Horizon_and_Vertical(x_raw,inverse=False)
                             y=Flip_Horizon_and_Vertical(y_raw,inverse=False)
 
@@ -457,11 +476,16 @@ class Solver(object):
                             pred_left = self.SEDCNN4(x)
                             pred_right = self.SEDCNN4(y)
 
+                            pred_left = pred_left.squeeze()
+                            pred_right = pred_right.squeeze()
+
                             x=Flip_Horizon_and_Vertical(pred_left,inverse=True)
                             y=Flip_Horizon_and_Vertical(pred_right,inverse=True)
 
-                            x_out=torch.mean(y,dim=0,keepdim=True)
+                            x_out=torch.mean(y,dim=0)
                             y_out=torch.mean(x,dim=0)
+                            x_out=x_out.squeeze()
+                            y_out=y_out.squeeze()
     
                         else:
                             x = x_raw.unsqueeze(1).float().to(self.device)
@@ -470,25 +494,24 @@ class Solver(object):
                             pred_left = self.SEDCNN4(x)
                             pred_right = self.SEDCNN4(y)
 
-                            x_out = pred_right.squeeze(0)
+                            x_out = pred_right.squeeze()
                             y_out = pred_left.squeeze()
                         
-                        transform_center=transforms.Compose([transforms.RandomHorizontalFlip(p=1),transforms.RandomVerticalFlip(p=1)])
-                        x_out=transform_center(x_out)
-                        x_out=x_out.squeeze()
+                        #process for opt data
+                        x_out=torch.flip(torch.flip(x_out,[0]),[1])
                         pred = torch.cat([x_out,y_out],dim=-1)
 
-                        x_input=transform_center(x_raw)
-                        x_input=x_input.squeeze()
+                        #process for raw data
+                        x_input=x_raw.squeeze()
                         y_input=y_raw.squeeze()
+                        x_input=torch.flip(torch.flip(x_input,[0]),[1])
                         input_pic = torch.cat([x_input,y_input],dim=-1)
 
                         if self.base_model:
                             pred = pred
                         else:  
-                            pred = pred.unsqueeze(0)
-                            pred = transform_center(pred)
-                            pred = pred.squeeze()
+                            pred = torch.flip(torch.flip(pred,[0]),[1])
+
                                        
                         # denormalize, truncate
                         input_pic= self.trunc(self.denormalize_(input_pic.view(shape_1, shape_2).cpu().detach()))
@@ -533,23 +556,19 @@ class Solver(object):
 
 
 def Flip_Horizon_and_Vertical(input,inverse):
- 
-    #如果需将其转回
+    
     if inverse:
         input_raw=input
     else:
         input_raw=input.repeat(4,1,1)
-        input_raw=input_raw.unsqueeze(1)
 
-    transform_horizon=transforms.RandomHorizontalFlip(p=1)
-    transform_vertical=transforms.RandomVerticalFlip(p=1)
-    transform_center=transforms.Compose([transforms.RandomHorizontalFlip(p=1),transforms.RandomVerticalFlip(p=1)])
-    raw=input_raw[0,:,:,:]
-    horizon=transform_horizon(input_raw[1,:,:,:])
-    vertical=transform_vertical(input_raw[2,:,:,:])
-    center = transform_center(input_raw[3,:,:,:])
-    #全部转化为npy数组
-    output_data=torch.cat([raw,horizon,vertical,center])
+    raw=input_raw[0,:,:]
+
+    horizon=torch.flip(input_raw[1,:,:],[1])
+    vertical=torch.flip(input_raw[2,:,:],[0])
+    center=torch.flip(torch.flip(input_raw[3,:,:],[0]),[1])
+    #catch and output
+    output_data=torch.stack([raw,horizon,vertical,center],dim=0)
     
     return output_data
 
